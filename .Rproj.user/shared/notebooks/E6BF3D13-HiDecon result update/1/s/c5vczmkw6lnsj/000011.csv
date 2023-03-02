@@ -1,0 +1,14 @@
+"0","system.time(single_run <- HiDecon(bulk = naturemix$bulk, ref = ren.ref, B = B, cell_type = cell_type, type_order = c(""Mono"", ""DC"", ""B_1"", ""B_2"", ""B_3"",""NK_1"",""CD4_1"", ""CD8_1"", ""CD8_5"", ""CD8_7""),  
+                    lambda = 40, Pi.start=NULL, max.iter=1e4, tol=1e-6, 
+                    test = ""wilcox"", nmrk = 50))
+"
+"1","   user "
+"1"," system "
+"1","elapsed "
+"1","
+"
+"1","  34.66 "
+"1","   0.25 "
+"1","  34.94 "
+"1","
+"

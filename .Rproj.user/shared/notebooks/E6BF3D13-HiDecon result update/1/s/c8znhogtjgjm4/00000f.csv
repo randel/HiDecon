@@ -1,0 +1,14 @@
+"0","system.time(single_run <- HiDecon(bulk = 2^expr-1,ref = ref_list$lm22$ref_matrix, B = B, cell_type = cell_type, type_order = c(""lymphocytes"", ""eosinophils"",""monocytes"",""neutrophils""), 
+                    lambda = 90, Pi.start=NULL, max.iter=1e4, tol=1e-6, 
+                    test = ""wilcox"", nmrk = 50))
+"
+"1","   user "
+"1"," system "
+"1","elapsed "
+"1","
+"
+"1","  12.55 "
+"1","   0.06 "
+"1","  12.61 "
+"1","
+"
