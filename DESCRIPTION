@@ -1,17 +1,15 @@
 Package: HiDecon
 Type: Package
 Title: Hierarchical cellular deconvolution
-Version: 0.1.0
-Author@R: c(person("Penghui", "Huang", role = c('aut', 'cre'), email = 'huangpenghui@pitt.edu'), person("Chris", "McKennan", role = c('aut'), email = 'huangpenghui@pitt.edu'))
+Version: 0.2.0
+Author: c(person("Penghui", "Huang", role = c('aut', 'cre'), email = 'huangpenghui@pitt.edu'), person("Chris", "McKennan", role = c('aut'), email = 'chm195@pitt.edu'))
 Maintainer: Penghui Huang <huangpenghui@pitt.edu>
 Description: Companion package to: Accurate estimation of rare cell type fractions from tissue omics data via hierarchical deconvolution. This package provides functions to estimate bulk tissue cellular fractions with single cell reference and cell type hierarchical tree.
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
-Depends: R (>= 4.0.0), scran, DescTools, rlist
-Imports:
-  glmnet
+Depends: R (>= 4.0.0), scran, DescTools, rlist, matrixStats, stats
+Imports: glmnet
 URL: https://github.com/randel/HiDecon
 BugReports: https://github.com/randel/HiDecon/issues
-VignetteBuilder: knitr
 RoxygenNote: 7.2.1
