@@ -1,5 +1,0 @@
-"0","load(file = ""D:/Penghui/COVID19 Ren data/ren.ref.subtypelymph.allseverity2.RData"")"
-"0","cell_type <- rep(c(""B_1"", ""CD4_1"",  ""B_2"" , ""CD8_1"", ""B_3"" , ""CD8_5"", ""CD8_7"" , ""NK_1"", ""Mono"" ,""DC""),126)"
-"0","load(""D:/Penghui/COVID19 Ren data/naturemix sublymph all severity2.RData"")"
-"0","colnames(naturemix$true.frac) <- c(""B_1"", ""CD4_1"",  ""B_2"" , ""CD8_1"", ""B_3"" , ""CD8_5"", ""CD8_7"" , ""NK_1"", ""Mono"" ,""DC"", ""severity"")"
-"0","naturemix$true.frac <- naturemix$true.frac[,c(""Mono"", ""DC"", ""B_1"", ""B_2"", ""B_3"",""NK_1"",""CD4_1"", ""CD8_1"", ""CD8_5"", ""CD8_7"", ""severity"")]"
