@@ -36,11 +36,7 @@ Hierarchical tree is specified from well-studied cell lineages or can be
 learnt from hierarchical clustering of scRNA-seq data. The hierarchical
 tree used to guide the deconvolution of example data is shown as below:
 
-<figure>
-<embed src="tree.pdf" style="width:35.0%" />
-<figcaption aria-hidden="true">Hierarchical tree constructed from cell
-lineage relationship and used to guide HiDecon.</figcaption>
-</figure>
+![Hierarchical tree constructed from cell lineage relationship and used to guide HiDecon.](https://github.com/randel/HiDecon/blob/master/tree.png?raw=true)
 
 ### Example data
 
