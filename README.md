@@ -87,3 +87,7 @@ select.res$mCCC
 #>       170       180       190       200 
 #> 0.8177250 0.8131562 0.8087080 0.8043871
 ```
+
+## Reference
+
+Penghui Huang, Manqi Cai, Xinghua Lu, Chris McKennan, Jiebiao Wang. Accurate estimation of rare cell type fractions from tissue omics data via hierarchical deconvolution. bioRxiv 2023.03.15.532820; doi: https://doi.org/10.1101/2023.03.15.532820
