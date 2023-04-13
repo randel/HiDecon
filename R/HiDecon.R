@@ -229,7 +229,7 @@ Check.KKT <- function(grad, pi, tol=1e-6) {
 #' @return a list in which elements are marker gene names for each layer of tree.
 #' @export
 #' @importFrom scran findMarkers
-HiDecon_marker <- function(ref, cell_type, B, type_order,  test="wilcox", nmrk = 50){
+HiDecon_marker <- function(ref, cell_type, B, type_order,  test="wilcox", nmrk = 50, n.cores = 1){
   ref <- log2(ref+1)
   CT.mapping <- diag(1, nrow = ncol(B[[length(B)]]), ncol = ncol(B[[length(B)]]))
   CTs <- type_order
@@ -242,7 +242,7 @@ HiDecon_marker <- function(ref, cell_type, B, type_order,  test="wilcox", nmrk =
       cell_type_2[cell_type_2 %in% CT.in.cluster] <- paste0("cluster",j)
     }
     out <-  findMarkers(ref, groups=cell_type_2,direction="up",
-                        test=test,pval.type ="all")
+                        test=test,pval.type ="all", BPPARAM = BiocParallel::MulticoreParam(n.cores))
     markers <- unique(unlist(lapply(out, function(x) x@rownames[1:nmrk])))
     hierarchical_markers <- c(list(markers), hierarchical_markers)
   }
@@ -342,9 +342,9 @@ HiDecon <- function(bulk, ref, B, cell_type, type_order,
 #' @importFrom scran findMarkers
 #' @importFrom glmnet glmnet
 #' @importFrom stats coef
-GeneratePseudoBulk <- function(bulk, ref, cell_type, type_order, test = "wilcox", nmrk = 50, seed = 123){
+GeneratePseudoBulk <- function(bulk, ref, cell_type, type_order, test = "wilcox", nmrk = 50, seed = 123, n.cores = 1){
   set.seed(seed)
-  out <-  findMarkers(log2(ref + 1), groups = cell_type, direction = "up", test=test, pval.type ="all")
+  out <-  findMarkers(log2(ref + 1), groups = cell_type, direction = "up", test=test, pval.type ="all", BPPARAM = BiocParallel::MulticoreParam(n.cores))
   markers <-  unlist(lapply(out, function(x) x@rownames[1:nmrk]))
   sig <- GeneratesigReference (log2(ref[markers,]+1),cell_type)
   sig <- sig[,type_order]
@@ -389,13 +389,13 @@ GeneratePseudoBulk <- function(bulk, ref, cell_type, type_order, test = "wilcox"
 #'
 select_HiDecon <- function(bulk, ref, B, cell_type, type_order,
                        lambda.set = seq(10,200,10), Pi.start=NULL, max.iter=1e4, tol=1e-6,
-                       test = "wilcox", nmrk = 50, seed = 123){
+                       test = "wilcox", nmrk = 50, seed = 123, n.cores = 1){
   ind = intersect(rownames(ref),rownames(bulk))
   bulk <- bulk[ind,]
   ref <- ref[ind,]
   bulk.sim <- GeneratePseudoBulk(bulk = bulk, ref = ref, cell_type = cell_type,
                                  type_order = type_order, test = test,
-                                 nmrk = nmrk, seed = seed)
+                                 nmrk = nmrk, seed = seed, n.cores = n.cores)
   sim <- bulk.sim$bulk.sim
   rownames(sim) <- ind
   frac.sim <- bulk.sim$frac.sim
