@@ -389,6 +389,9 @@ GeneratePseudoBulk <- function(bulk, ref, cell_type, type_order, test = "wilcox"
 select_HiDecon <- function(bulk, ref, B, cell_type, type_order,
                        lambda.set = seq(10,200,10), Pi.start=NULL, max.iter=1e4, tol=1e-6,
                        test = "wilcox", nmrk = 50, seed = 123, n.cores = 1){
+  # Check for matching lengths of type.order and lowest level of B
+  if (!identical(ncol(B[[length(B)]]), length(type_order))) stop("length(type_order) and ncol(B[[length(B)]]) must match.")
+  
   ind = intersect(rownames(ref),rownames(bulk))
   bulk <- bulk[ind,]
   ref <- ref[ind,]
