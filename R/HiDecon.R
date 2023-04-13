@@ -230,7 +230,6 @@ Check.KKT <- function(grad, pi, tol=1e-6) {
 #' @export
 #' @importFrom scran findMarkers
 HiDecon_marker <- function(ref, cell_type, B, type_order,  test="wilcox", nmrk = 50, n.cores = 1){
-  ref <- log2(ref+1)
   CT.mapping <- diag(1, nrow = ncol(B[[length(B)]]), ncol = ncol(B[[length(B)]]))
   CTs <- type_order
   hierarchical_markers <- list()
@@ -272,7 +271,7 @@ HiDecon_input <- function(bulk, ref,  cell_type, B, type_order, test = "wilcox",
   Signature.list <- list()
   for(i in 1:length(B)){
     Signature.list <- c(Signature.list ,
-                        list(reference(ref = t(log2(ref[markers[[i]],] + 1)),
+                        list(reference(ref = t(ref[markers[[i]],]),
                                        ref.type = cell_type, B = B,
                                        type_order = type_order, layer = i)))
   }
@@ -344,9 +343,9 @@ HiDecon <- function(bulk, ref, B, cell_type, type_order,
 #' @importFrom stats coef
 GeneratePseudoBulk <- function(bulk, ref, cell_type, type_order, test = "wilcox", nmrk = 50, seed = 123, n.cores = 1){
   set.seed(seed)
-  out <-  findMarkers(log2(ref + 1), groups = cell_type, direction = "up", test=test, pval.type ="all", BPPARAM = BiocParallel::MulticoreParam(n.cores))
+  out <-  findMarkers(ref, groups = cell_type, direction = "up", test=test, pval.type ="all", BPPARAM = BiocParallel::MulticoreParam(n.cores))
   markers <-  unlist(lapply(out, function(x) x@rownames[1:nmrk]))
-  sig <- GeneratesigReference (log2(ref[markers,]+1),cell_type)
+  sig <- GeneratesigReference (ref[markers, ],cell_type)
   sig <- sig[,type_order]
   sim_prop <-  apply(t(log2(bulk[markers,]+1)),1,function(x)coef(glmnet(sig[markers,],x,lambda = 0, lower.limits = 0,intercept = FALSE,standardize = FALSE))[-1,])
   sim_prop <-  t(sim_prop)/colSums(sim_prop)
@@ -393,13 +392,14 @@ select_HiDecon <- function(bulk, ref, B, cell_type, type_order,
   ind = intersect(rownames(ref),rownames(bulk))
   bulk <- bulk[ind,]
   ref <- ref[ind,]
-  bulk.sim <- GeneratePseudoBulk(bulk = bulk, ref = ref, cell_type = cell_type,
+  ref.log2 <- log2(ref + 1)
+  bulk.sim <- GeneratePseudoBulk(bulk = bulk, ref = ref.log2, cell_type = cell_type,
                                  type_order = type_order, test = test,
                                  nmrk = nmrk, seed = seed, n.cores = n.cores)
   sim <- bulk.sim$bulk.sim
   rownames(sim) <- ind
   frac.sim <- bulk.sim$frac.sim
-  sim.input <- HiDecon_input(bulk = sim, ref = ref,  cell_type = cell_type,
+  sim.input <- HiDecon_input(bulk = sim, ref = ref.log2,  cell_type = cell_type,
                              B = B, type_order = type_order, test = test,
                              nmrk = nmrk)
   mCCC <- rep(0,length(lambda.set))
