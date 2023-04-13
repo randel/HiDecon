@@ -1,6 +1,6 @@
 # HiDecon
 
-![\textbf{Hi}erarchical \\ \\ \textbf{Decon}volution \\ \\ (\textbf{HiDecon)}](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;%5Ctextbf%7BHi%7Derarchical%20%5C%20%5C%20%5Ctextbf%7BDecon%7Dvolution%20%5C%20%5C%20%28%5Ctextbf%7BHiDecon%29%7D "\textbf{Hi}erarchical \ \ \textbf{Decon}volution \ \ (\textbf{HiDecon)}")
+**Hi**erarchical **Decon**volution (**HiDecon**)
 is a cellular deconvolution method that uses single-cell RNA sequencing
 references and a hierarchical cell type tree, which models the
 similarities among cell types and cell differentiation relationships, to
