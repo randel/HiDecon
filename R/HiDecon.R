@@ -265,9 +265,9 @@ HiDecon_marker <- function(ref, cell_type, B, type_order,  test="wilcox", nmrk =
 #' @return a list with input elements for function HiDecon and select_HiDecon.
 #' @export
 #'
-HiDecon_input <- function(bulk, ref,  cell_type, B, type_order, test = "wilcox", nmrk = 50){
+HiDecon_input <- function(bulk, ref,  cell_type, B, type_order, test = "wilcox", nmrk = 50, n.cores = 1){
   markers <- HiDecon_marker(ref = ref, cell_type = cell_type, B = B,
-                            type_order = type_order, test = test, nmrk = 50)
+                            type_order = type_order, test = test, nmrk = 50, n.cores = n.cores)
   Signature.list <- list()
   for(i in 1:length(B)){
     Signature.list <- c(Signature.list ,
@@ -308,13 +308,13 @@ HiDecon_input <- function(bulk, ref,  cell_type, B, type_order, test = "wilcox",
 #'
 HiDecon <- function(bulk, ref, B, cell_type, type_order,
                     lambda = 40, Pi.start=NULL, max.iter=1e4, tol=1e-6,
-                    test = "wilcox", nmrk = 50){
+                    test = "wilcox", nmrk = 50, n.cores = 1){
   ind = intersect(rownames(ref),rownames(bulk))
   bulk <- bulk[ind,]
   ref <- ref[ind,]
   input_dat <- HiDecon_input(bulk = bulk, ref = ref,  cell_type = cell_type,
                              B = B, type_order = type_order, test = test,
-                             nmrk = nmrk)
+                             nmrk = nmrk, n.cores = n.cores)
   HiDecon_est <- Est.AllPi(Y.list = input_dat$Y.list, A = input_dat$A.tilde,
                            B = input_dat$B.tilde, lambda = lambda,
                            Pi.start=NULL, max.iter=max.iter, tol=tol)
@@ -404,7 +404,7 @@ select_HiDecon <- function(bulk, ref, B, cell_type, type_order,
   frac.sim <- bulk.sim$frac.sim
   sim.input <- HiDecon_input(bulk = sim, ref = ref.log2,  cell_type = cell_type,
                              B = B, type_order = type_order, test = test,
-                             nmrk = nmrk)
+                             nmrk = nmrk, n.cores = n.cores)
   mCCC <- rep(0,length(lambda.set))
   names(mCCC) <- lambda.set
   for(i in 1:length(lambda.set)){
@@ -417,7 +417,7 @@ select_HiDecon <- function(bulk, ref, B, cell_type, type_order,
   lambda <- lambda.set[which.max(mCCC)]
   input_dat <- HiDecon_input(bulk = bulk, ref = ref,  cell_type = cell_type,
                              B = B, type_order = type_order, test = test,
-                             nmrk = nmrk)
+                             nmrk = nmrk, n.cores = n.cores)
   HiDecon_est <- Est.AllPi(Y.list = input_dat$Y.list, A = input_dat$A.tilde,
                            B = input_dat$B.tilde, lambda = lambda,
                            Pi.start=NULL, max.iter=max.iter, tol=tol)
