@@ -229,7 +229,8 @@ Check.KKT <- function(grad, pi, tol=1e-6) {
 #' @return a list in which elements are marker gene names for each layer of tree.
 #' @export
 #' @importFrom scran findMarkers
-HiDecon_marker <- function(ref, cell_type, B, type_order,  test="wilcox", nmrk = 50, n.cores = 1){
+HiDecon_marker <- function(ref, cell_type, B, type_order,  test="wilcox", nmrk = 50){
+  ref <- log2(ref+1)
   CT.mapping <- diag(1, nrow = ncol(B[[length(B)]]), ncol = ncol(B[[length(B)]]))
   CTs <- type_order
   hierarchical_markers <- list()
@@ -241,7 +242,7 @@ HiDecon_marker <- function(ref, cell_type, B, type_order,  test="wilcox", nmrk =
       cell_type_2[cell_type_2 %in% CT.in.cluster] <- paste0("cluster",j)
     }
     out <-  findMarkers(ref, groups=cell_type_2,direction="up",
-                        test=test,pval.type ="all", BPPARAM = BiocParallel::MulticoreParam(n.cores))
+                        test=test,pval.type ="all")
     markers <- unique(unlist(lapply(out, function(x) x@rownames[1:nmrk])))
     hierarchical_markers <- c(list(markers), hierarchical_markers)
   }
@@ -265,13 +266,13 @@ HiDecon_marker <- function(ref, cell_type, B, type_order,  test="wilcox", nmrk =
 #' @return a list with input elements for function HiDecon and select_HiDecon.
 #' @export
 #'
-HiDecon_input <- function(bulk, ref,  cell_type, B, type_order, test = "wilcox", nmrk = 50, n.cores = 1){
+HiDecon_input <- function(bulk, ref,  cell_type, B, type_order, test = "wilcox", nmrk = 50){
   markers <- HiDecon_marker(ref = ref, cell_type = cell_type, B = B,
-                            type_order = type_order, test = test, nmrk = 50, n.cores = n.cores)
+                            type_order = type_order, test = test, nmrk = 50)
   Signature.list <- list()
   for(i in 1:length(B)){
     Signature.list <- c(Signature.list ,
-                        list(reference(ref = t(ref[markers[[i]],]),
+                        list(reference(ref = t(log2(ref[markers[[i]],] + 1)),
                                        ref.type = cell_type, B = B,
                                        type_order = type_order, layer = i)))
   }
@@ -308,13 +309,13 @@ HiDecon_input <- function(bulk, ref,  cell_type, B, type_order, test = "wilcox",
 #'
 HiDecon <- function(bulk, ref, B, cell_type, type_order,
                     lambda = 40, Pi.start=NULL, max.iter=1e4, tol=1e-6,
-                    test = "wilcox", nmrk = 50, n.cores = 1){
+                    test = "wilcox", nmrk = 50){
   ind = intersect(rownames(ref),rownames(bulk))
   bulk <- bulk[ind,]
   ref <- ref[ind,]
   input_dat <- HiDecon_input(bulk = bulk, ref = ref,  cell_type = cell_type,
                              B = B, type_order = type_order, test = test,
-                             nmrk = nmrk, n.cores = n.cores)
+                             nmrk = nmrk)
   HiDecon_est <- Est.AllPi(Y.list = input_dat$Y.list, A = input_dat$A.tilde,
                            B = input_dat$B.tilde, lambda = lambda,
                            Pi.start=NULL, max.iter=max.iter, tol=tol)
@@ -341,11 +342,11 @@ HiDecon <- function(bulk, ref, B, cell_type, type_order,
 #' @importFrom scran findMarkers
 #' @importFrom glmnet glmnet
 #' @importFrom stats coef
-GeneratePseudoBulk <- function(bulk, ref, cell_type, type_order, test = "wilcox", nmrk = 50, seed = 123, n.cores = 1){
+GeneratePseudoBulk <- function(bulk, ref, cell_type, type_order, test = "wilcox", nmrk = 50, seed = 123){
   set.seed(seed)
-  out <-  findMarkers(ref, groups = cell_type, direction = "up", test=test, pval.type ="all", BPPARAM = BiocParallel::MulticoreParam(n.cores))
+  out <-  findMarkers(log2(ref + 1), groups = cell_type, direction = "up", test=test, pval.type ="all")
   markers <-  unlist(lapply(out, function(x) x@rownames[1:nmrk]))
-  sig <- GeneratesigReference (ref[markers, ],cell_type)
+  sig <- GeneratesigReference (log2(ref[markers,]+1),cell_type)
   sig <- sig[,type_order]
   sim_prop <-  apply(t(log2(bulk[markers,]+1)),1,function(x)coef(glmnet(sig[markers,],x,lambda = 0, lower.limits = 0,intercept = FALSE,standardize = FALSE))[-1,])
   sim_prop <-  t(sim_prop)/colSums(sim_prop)
@@ -388,23 +389,19 @@ GeneratePseudoBulk <- function(bulk, ref, cell_type, type_order, test = "wilcox"
 #'
 select_HiDecon <- function(bulk, ref, B, cell_type, type_order,
                        lambda.set = seq(10,200,10), Pi.start=NULL, max.iter=1e4, tol=1e-6,
-                       test = "wilcox", nmrk = 50, seed = 123, n.cores = 1){
-  # Check for matching lengths of type.order and lowest level of B
-  if (!identical(ncol(B[[length(B)]]), length(type_order))) stop("length(type_order) and ncol(B[[length(B)]]) must match.")
-  
+                       test = "wilcox", nmrk = 50, seed = 123){
   ind = intersect(rownames(ref),rownames(bulk))
   bulk <- bulk[ind,]
   ref <- ref[ind,]
-  ref.log2 <- log2(ref + 1)
-  bulk.sim <- GeneratePseudoBulk(bulk = bulk, ref = ref.log2, cell_type = cell_type,
+  bulk.sim <- GeneratePseudoBulk(bulk = bulk, ref = ref, cell_type = cell_type,
                                  type_order = type_order, test = test,
-                                 nmrk = nmrk, seed = seed, n.cores = n.cores)
+                                 nmrk = nmrk, seed = seed)
   sim <- bulk.sim$bulk.sim
   rownames(sim) <- ind
   frac.sim <- bulk.sim$frac.sim
-  sim.input <- HiDecon_input(bulk = sim, ref = ref.log2,  cell_type = cell_type,
+  sim.input <- HiDecon_input(bulk = sim, ref = ref,  cell_type = cell_type,
                              B = B, type_order = type_order, test = test,
-                             nmrk = nmrk, n.cores = n.cores)
+                             nmrk = nmrk)
   mCCC <- rep(0,length(lambda.set))
   names(mCCC) <- lambda.set
   for(i in 1:length(lambda.set)){
@@ -417,7 +414,7 @@ select_HiDecon <- function(bulk, ref, B, cell_type, type_order,
   lambda <- lambda.set[which.max(mCCC)]
   input_dat <- HiDecon_input(bulk = bulk, ref = ref,  cell_type = cell_type,
                              B = B, type_order = type_order, test = test,
-                             nmrk = nmrk, n.cores = n.cores)
+                             nmrk = nmrk)
   HiDecon_est <- Est.AllPi(Y.list = input_dat$Y.list, A = input_dat$A.tilde,
                            B = input_dat$B.tilde, lambda = lambda,
                            Pi.start=NULL, max.iter=max.iter, tol=tol)
