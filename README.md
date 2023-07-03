@@ -1,5 +1,5 @@
 
-**Hi***e**r**a**r**c**h**i**c**a**l*  **Decon***v**o**l**u**t**i**o**n*  (**HiDecon)**
+**Hi**erarchical  **Decon**volution  (**HiDecon)**
 is a cellular deconvolution method that uses single-cell RNA sequencing
 references and a hierarchical cell type tree, which models the
 similarities among cell types and cell differentiation relationships, to
