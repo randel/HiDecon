@@ -12,7 +12,7 @@ my.CCC(est, tr)
 \item{tr}{matrix, ground truth (sample * cell types)}
 }
 \value{
-CCC and mean CCC
+CCC and mean CCC (the last element of the vector)
 }
 \description{
 Calculate Lin's concordance correlation coefficients between estimates and ground truth for cell types and the mean CCC.

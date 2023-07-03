@@ -319,6 +319,8 @@ HiDecon <- function(bulk, ref, B, cell_type, type_order,
   HiDecon_est <- Est.AllPi(Y.list = input_dat$Y.list, A = input_dat$A.tilde,
                            B = input_dat$B.tilde, lambda = lambda,
                            Pi.start=NULL, max.iter=max.iter, tol=tol)
+  colnames(HiDecon_est$Pi) <- type_order
+  rownames(HiDecon_est$Pi) <- colnames(bulk)
   return(HiDecon_est$Pi)
 }
 
@@ -409,7 +411,7 @@ select_HiDecon <- function(bulk, ref, B, cell_type, type_order,
     frac <- Est.AllPi(Y.list = sim.input$Y.list, A = sim.input$A.tilde,
                                      B = sim.input$B.tilde, lambda = lambda,
                                      Pi.start=NULL, max.iter=max.iter, tol=tol)$Pi
-    mCCC[i] <- (my.CCC(frac, frac.sim))["mCCC"]
+    mCCC[i] <- my.CCC(frac, frac.sim)[length(type_order)+1]
   }
   lambda <- lambda.set[which.max(mCCC)]
   input_dat <- HiDecon_input(bulk = bulk, ref = ref,  cell_type = cell_type,
@@ -418,6 +420,8 @@ select_HiDecon <- function(bulk, ref, B, cell_type, type_order,
   HiDecon_est <- Est.AllPi(Y.list = input_dat$Y.list, A = input_dat$A.tilde,
                            B = input_dat$B.tilde, lambda = lambda,
                            Pi.start=NULL, max.iter=max.iter, tol=tol)
+  colnames(HiDecon_est$Pi) <- type_order
+  rownames(HiDecon_est$Pi) <- colnames(bulk)
   return(list("res" = HiDecon_est$Pi, "lambda" = lambda, "mCCC" = mCCC))
 }
 
@@ -428,7 +432,7 @@ select_HiDecon <- function(bulk, ref, B, cell_type, type_order,
 #' @param est matrix, estimated cellular fractions (samples * cell types)
 #' @param tr matrix, ground truth (sample * cell types)
 #'
-#' @return CCC and mean CCC
+#' @return CCC and mean CCC (the last element of the vector)
 #' @export
 #' @importFrom DescTools CCC
 my.CCC <- function(est, tr){
@@ -436,8 +440,9 @@ my.CCC <- function(est, tr){
   for(i in 1:ncol(est)){
     CT.CCC <- c(CT.CCC, unlist(CCC(est[,i], tr[,i])$rho.c[1]))
   }
-  CT.CCC <- c(CT.CCC, mean(CT.CCC))
-  names(CT.CCC) <- c(colnames(est), "mCCC")
+  tmp <- CT.CCC
+  tmp <- replace(tmp, is.na(tmp), 0)
+  CT.CCC <- c(CT.CCC, mean(tmp))
 
   return(CT.CCC)
 }
