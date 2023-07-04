@@ -1,0 +1,95 @@
+---
+title: "Untitled"
+author: "Penghui Huang"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Pick proper samples that have abundant cells from cell types of interest
+
+```{r}
+load("COVID19 Ren data/subtype_prop.RData") # type_prop
+load("COVID19 Ren data/sample_sub_meta.RData") # sample_meta
+```
+
+```{r}
+sample.chosen <- sample_meta 
+sort(colSums(as.matrix(sample.chosen[,1:64])), decreasing = TRUE)
+
+# Label all the Mono subtypes as Mono 
+sample.chosen$Mono <- sample.chosen$`Mono_c1-CD14-CCL3` + sample.chosen$`Mono_c2-CD14-HLA-DPB1` + sample.chosen$`Mono_c3-CD14-VCAN` + sample.chosen$`Mono_c4-CD14-CD16` + sample.chosen$`Mono_c5-CD16`
+sample.chosen$DC <- sample.chosen$`DC_c1-CLEC9A` + sample.chosen$`DC_c2-CD1C` + sample.chosen$`DC_c3-LAMP3` + sample.chosen$`DC_c4-LILRA4`
+
+sum(sample.chosen$`B_c01-TCL1A`>20  & sample.chosen$`T_CD4_c01-LEF1`>20  & sample.chosen$`B_c02-MS4A1-CD27`>20 & sample.chosen$`T_CD8_c01-LEF1`>20 & sample.chosen$`B_c03-CD27-AIM2`>20 & sample.chosen$`T_CD8_c05-ZNF683`>20 & sample.chosen$`T_CD8_c07-TYROBP`>20 & sample.chosen$`NK_c01-FCGR3A`>20 & sample.chosen$Mono > 20 & sample.chosen$DC > 20) # 126 samples meet this standard
+
+sample.chosen <- sample.chosen[(sample.chosen$`B_c01-TCL1A`>20  & sample.chosen$`T_CD4_c01-LEF1`>20  & sample.chosen$`B_c02-MS4A1-CD27`>20 & sample.chosen$`T_CD8_c01-LEF1`>20 & sample.chosen$`B_c03-CD27-AIM2`>20 & sample.chosen$`T_CD8_c05-ZNF683`>20 & sample.chosen$`T_CD8_c07-TYROBP`>20 & sample.chosen$`NK_c01-FCGR3A`>20 & sample.chosen$Mono > 20 & sample.chosen$DC > 20), c("B_c01-TCL1A", "T_CD4_c01-LEF1", "B_c02-MS4A1-CD27", "T_CD8_c01-LEF1", "B_c03-CD27-AIM2", "T_CD8_c05-ZNF683", "T_CD8_c07-TYROBP", "NK_c01-FCGR3A", "Mono", "DC", "severity")]
+true.frac <- sapply(1:nrow(sample.chosen), function(i){c(sample.chosen[i,1:10]/sum(sample.chosen[i,1:10]))})
+true.frac <- data.frame(matrix(unlist(true.frac), byrow = TRUE, nrow = ncol(true.frac)), "severity"=sample.chosen$severity)
+colnames(true.frac) <- c("B_c01-TCL1A", "T_CD4_c01-LEF1", "B_c02-MS4A1-CD27", "T_CD8_c01-LEF1", "B_c03-CD27-AIM2", "T_CD8_c05-ZNF683", "T_CD8_c07-TYROBP", "NK_c01-FCGR3A", "Mono", "DC", "severity")
+rownames(true.frac) <- rownames(sample.chosen)
+```
+
+## Average single cell raw counts to generate bulk data
+
+```{r}
+nature <- matrix(0,nrow = 27943, ncol = nrow(true.frac))
+for(i in 1:nrow(sample.chosen)){
+  cat("\n - Generate bulk sample for ",i)
+  load(paste0("COVID19 Ren data/byDonor/Seurat/",rownames(sample.chosen)[i],".RData")) # The data was by sample, and it is Seurat format
+  raw.counts <- tmp.seurat@assays$RNA@counts
+  tp <- tmp.seurat$subType
+  tp <- replace(tp, tp %in% c("Mono_c1-CD14-CCL3", "Mono_c2-CD14-HLA-DPB1", "Mono_c3-CD14-VCAN", "Mono_c4-CD14-CD16", "Mono_c5-CD16"), "Mono")
+  tp <- replace(tp, tp %in% c("DC_c1-CLEC9A", "DC_c2-CD1C", "DC_c3-LAMP3", "DC_c4-LILRA4"), "DC")
+  raw.counts <- raw.counts[, tp %in% c("B_c01-TCL1A", "T_CD4_c01-LEF1", "B_c02-MS4A1-CD27", "T_CD8_c01-LEF1", "B_c03-CD27-AIM2", "T_CD8_c05-ZNF683", "T_CD8_c07-TYROBP", "NK_c01-FCGR3A", "Mono", "DC")]
+  tp <- tp[tp %in% c("B_c01-TCL1A", "T_CD4_c01-LEF1", "B_c02-MS4A1-CD27", "T_CD8_c01-LEF1", "B_c03-CD27-AIM2", "T_CD8_c05-ZNF683", "T_CD8_c07-TYROBP", "NK_c01-FCGR3A", "Mono", "DC")]
+  nature.mix <- rowMeans(raw.counts)
+  nature[,i] <- nature.mix
+}
+
+rownames(nature) <- rownames(raw.counts)
+colnames(nature) <- rownames(true.frac)
+naturemix <- list("bulk" = nature, "true.frac" = true.frac)
+
+
+## Save simulated bulk data to run HiDecon
+for(i in 1:ncol(naturemix$bulk)){
+  naturemix$bulk[,i] <- (naturemix$bulk[,i]/sum(naturemix$bulk[,i]))*1000000
+} 
+save(naturemix, file = "COVID19 Ren data/naturemix sublymph all severity2.RData")
+
+```
+
+## Calculate average expression profile of single samples, and concatenate them to get the sample level single cell reference
+
+```{r}
+ren.ref <- matrix(0,nrow = 27943, ncol = 10*nrow(sample.chosen))
+total.cells <- 0
+for(i in 1:nrow(sample.chosen)){
+  cat("\n - sample: ",i)
+  load(paste0("COVID19 Ren data/byDonor/Seurat/",rownames(sample.chosen)[i],".RData"))
+  raw.counts <- tmp.seurat@assays$RNA@counts
+  tp <- tmp.seurat$subType
+  tp <- replace(tp, tp %in% c("Mono_c1-CD14-CCL3", "Mono_c2-CD14-HLA-DPB1", "Mono_c3-CD14-VCAN", "Mono_c4-CD14-CD16", "Mono_c5-CD16"), "Mono")
+  tp <- replace(tp, tp %in% c("DC_c1-CLEC9A", "DC_c2-CD1C", "DC_c3-LAMP3", "DC_c4-LILRA4"), "DC")
+  
+  raw.counts <- raw.counts[, tp %in% c("B_c01-TCL1A", "T_CD4_c01-LEF1", "B_c02-MS4A1-CD27", "T_CD8_c01-LEF1", "B_c03-CD27-AIM2", "T_CD8_c05-ZNF683", "T_CD8_c07-TYROBP", "NK_c01-FCGR3A", "Mono", "DC")]
+  total.cells <- total.cells + ncol(raw.counts)
+  tp <- tp[tp %in% c("B_c01-TCL1A", "T_CD4_c01-LEF1", "B_c02-MS4A1-CD27", "T_CD8_c01-LEF1", "B_c03-CD27-AIM2", "T_CD8_c05-ZNF683", "T_CD8_c07-TYROBP", "NK_c01-FCGR3A", "Mono", "DC")]
+  expr.tp <- data.frame("B_c01-TCL1A" = rowMeans(raw.counts[,tp == "B_c01-TCL1A"]), "T_CD4_c01-LEF1" = rowMeans(raw.counts[,tp == "T_CD4_c01-LEF1"]),  "B_c02-MS4A1-CD27" = rowMeans(raw.counts[,tp == "B_c02-MS4A1-CD27"]), "T_CD8_c01-LEF1" = rowMeans(raw.counts[,tp == "T_CD8_c01-LEF1"]), "B_c03-CD27-AIM2" = rowMeans(raw.counts[,tp == "B_c03-CD27-AIM2"]), "T_CD8_c05-ZNF683" = rowMeans(raw.counts[,tp == "T_CD8_c05-ZNF683"]), "T_CD8_c07-TYROBP" = rowMeans(raw.counts[,tp == "T_CD8_c07-TYROBP"]), "NK_c01-FCGR3A" = rowMeans(raw.counts[,tp == "NK_c01-FCGR3A"]), "Mono" = rowMeans(raw.counts[,tp == "Mono"]) ,"DC" = rowMeans(raw.counts[,tp == "DC"]) )
+  ren.ref[,c(1:10)+10*(i-1)] <- as.matrix(expr.tp)
+}
+rownames(ren.ref) <- rownames(raw.counts)
+
+
+## save simulated single cell data to run HiDecon
+for(i in 1:ncol(ren.ref)){
+  ren.ref[,i] <- (ren.ref[,i]/sum(ren.ref[,i]))*1000000
+} 
+rownames(ren.ref) <- rownames(raw.counts)
+save(ren.ref,file = "COVID19 Ren data/ren.ref.subtypelymph.allseverity2.RData")
+```
+
+

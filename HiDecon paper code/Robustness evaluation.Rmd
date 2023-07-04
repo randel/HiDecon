@@ -1,0 +1,44 @@
+---
+title: "Robustness evaluation"
+author: "Penghui Huang"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+load(file = "COVID19 Ren data/ren.ref.subtypelymph.allseverity2.RData")
+cell_type <- rep(c("B_1", "CD4_1",  "B_2" , "CD8_1", "B_3" , "CD8_5", "CD8_7" , "NK_1", "Mono" ,"DC"),126)
+load("COVID19 Ren data/naturemix sublymph all severity2.RData")
+colnames(naturemix$true.frac) <- c("B_1", "CD4_1",  "B_2" , "CD8_1", "B_3" , "CD8_5", "CD8_7" , "NK_1", "Mono" ,"DC", "severity")
+naturemix$true.frac <- naturemix$true.frac[,c("Mono", "DC", "B_1", "B_2", "B_3","NK_1","CD4_1", "CD8_1", "CD8_5", "CD8_7", "severity")]
+```
+
+```{r}
+B1 <- rep(1,2)
+B2 <- matrix(c(1,1,0,0,0,0,1,1),nrow = 2, byrow = T)
+B3 <- matrix(c(1,rep(0,5),1,rep(0,5),1,rep(0,5),1,1),nrow = 4, byrow = T)
+B4 <- matrix(c(1,rep(0,6),1,rep(0,6),1,rep(0,6),1,rep(0,6),1,1),nrow = 5, byrow = T)
+B5 <- matrix(c(1,1,1,rep(0,12), 1, rep(0,12), 1,1,1, rep(0,12),1,rep(0,12),1,rep(0,12),1,1,1 ), nrow = 6, byrow=T)
+B = list(B1,B2,B3,B4,B5)
+B[[5]] <- cbind(c(1,0,0,0,0,0),((B[[5]])[,4:12]))
+
+
+real_prop <- naturemix$true.frac
+real_prop <- real_prop[,c("Mono", "DC", "B_1", "B_2", "B_3","NK_1","CD4_1", "CD8_1", "CD8_5", "CD8_7")]
+```
+
+```{r}
+source("Sensitivity Analysis noise on bulk.R")
+seed.seq <- seq(1,50,1)
+rep_res <- list()
+for(i in 1:length(seed.seq)){
+  cat("\n repetition",i)
+  Sensitivity_res <- Sens.Deconv(bulk = naturemix$bulk, ref = ren.ref, B, cell_type, type_order = c("Mono", "DC", "B_1", "B_2", "B_3","NK_1","CD4_1", "CD8_1", "CD8_5", "CD8_7"), real_prop, lambda.set = seq(10,200,10), noises = seq(0,2.4,0.1), seed = seed.seq[i])
+  rep_res <- c(rep_res, list(Sensitivity_res))
+}
+names(Sensitivity_res) <- as.character(seq(0,2.4,0.1))
+Sensitivity_res
+```
