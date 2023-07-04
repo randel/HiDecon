@@ -375,7 +375,7 @@ GeneratePseudoBulk <- function(bulk, ref, cell_type, type_order, test = "wilcox"
 #' @param B list: contains cell type mapping matrices (same length as tree depth).
 #' @param cell_type vector: cell type label of single cell reference.
 #' @param type_order vector: specify cell type order in the bottom layer of tree.
-#' @param lambda.set vector: parameter set used for parameter selection. Default is seq(10,200,10).
+#' @param lambda.set vector: parameter set used for parameter selection. Default is from 10 to 1000: c(10, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000).
 #' @param Pi.start vector, non-negative starting point for the estimation of sample i. Default is NULL, then function will assign the starting point.
 #' @param max.iter the maximum number of iterations, default is 1e4.
 #' @param tol tolerance for the KKT conditions, default is 1e-6.
@@ -390,7 +390,7 @@ GeneratePseudoBulk <- function(bulk, ref, cell_type, type_order, test = "wilcox"
 #' @export
 #'
 select_HiDecon <- function(bulk, ref, B, cell_type, type_order,
-                       lambda.set = seq(10,200,10), Pi.start=NULL, max.iter=1e4, tol=1e-6,
+                       lambda.set = c(10, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000), Pi.start=NULL, max.iter=1e4, tol=1e-6,
                        test = "wilcox", nmrk = 50, seed = 123){
   ind = intersect(rownames(ref),rownames(bulk))
   bulk <- bulk[ind,]
@@ -408,12 +408,31 @@ select_HiDecon <- function(bulk, ref, B, cell_type, type_order,
   names(mCCC) <- lambda.set
   for(i in 1:length(lambda.set)){
     lambda <- lambda.set[i]
+    cat("\n current lambda:",lambda)
     frac <- Est.AllPi(Y.list = sim.input$Y.list, A = sim.input$A.tilde,
-                                     B = sim.input$B.tilde, lambda = lambda,
-                                     Pi.start=NULL, max.iter=max.iter, tol=tol)$Pi
+                      B = sim.input$B.tilde, lambda = lambda,
+                      Pi.start=NULL, max.iter=max.iter, tol=tol)$Pi
     mCCC[i] <- my.CCC(frac, frac.sim)[length(type_order)+1]
   }
-  lambda <- lambda.set[which.max(mCCC)]
+
+
+  # Choose the best lambda range
+  range.peak <- which.max(mCCC)
+
+  # Another round of parameter selection
+  if(range.peak==1 | range.peak==length(lambda.set)){lambda <- lambda.set[range.peak]}else{
+    lambda.set <- seq(lambda.set[range.peak-1],lambda.set[range.peak+1],10)
+    mCCC <- rep(0,length(lambda.set))
+    names(mCCC) <- lambda.set
+    for(i in 1:length(lambda.set)){
+      cat("\n current lambda:",lambda.set[i])
+      frac <- Est.AllPi(Y.list = sim.input$Y.list, A = sim.input$A.tilde,
+                        B = sim.input$B.tilde, lambda = lambda.set[i],
+                        Pi.start=NULL, max.iter=max.iter, tol=tol)$Pi
+      mCCC[i] <- my.CCC(frac, frac.sim)[length(type_order)+1]
+    }
+    lambda <- lambda.set[which.max(mCCC)]
+  }
   input_dat <- HiDecon_input(bulk = bulk, ref = ref,  cell_type = cell_type,
                              B = B, type_order = type_order, test = test,
                              nmrk = nmrk)

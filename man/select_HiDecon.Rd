@@ -10,7 +10,7 @@ select_HiDecon(
   B,
   cell_type,
   type_order,
-  lambda.set = seq(10, 200, 10),
+  lambda.set = c(10, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000),
   Pi.start = NULL,
   max.iter = 10000,
   tol = 1e-06,
@@ -30,7 +30,7 @@ select_HiDecon(
 
 \item{type_order}{vector: specify cell type order in the bottom layer of tree.}
 
-\item{lambda.set}{vector: parameter set used for parameter selection. Default is seq(10,200,10).}
+\item{lambda.set}{vector: parameter set used for parameter selection. Default is from 10 to 1000: c(10, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000).}
 
 \item{Pi.start}{vector, non-negative starting point for the estimation of sample i. Default is NULL, then function will assign the starting point.}
 

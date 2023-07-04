@@ -1,7 +1,7 @@
 Package: HiDecon
 Type: Package
 Title: Hierarchical cellular deconvolution
-Version: 0.3.0
+Version: 0.3.1
 Author: c(person("Penghui", "Huang", role = c('aut', 'cre'), email = 'huangpenghui@pitt.edu'), person("Chris", "McKennan", role = c('aut'), email = 'chm195@pitt.edu'))
 Maintainer: Penghui Huang <huangpenghui@pitt.edu>
 Description: Companion package to: Accurate estimation of rare cell type fractions from tissue omics data via hierarchical deconvolution. This package provides functions to estimate bulk tissue cellular fractions with single cell reference and cell type hierarchical tree.
