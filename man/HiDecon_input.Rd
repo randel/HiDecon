@@ -7,9 +7,9 @@
 HiDecon_input(bulk, ref, cell_type, B, type_order, test = "wilcox", nmrk = 50)
 }
 \arguments{
-\item{bulk}{matrix, bulk data of genes by samples. It should be count per million normalized.}
+\item{bulk}{matrix, bulk data of genes by samples. It should be normalized.}
 
-\item{ref}{matrix: Single cell data matrix (genes by cells) after count per million normalization.}
+\item{ref}{matrix: Single cell data matrix (genes by cells) after normalization.}
 
 \item{cell_type}{vector: cell type label of single cell reference.}
 

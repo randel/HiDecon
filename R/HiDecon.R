@@ -2,7 +2,7 @@
 #' @title reference.
 #' @description Calculate signature matrix (reference) for some layer.
 #'
-#' @param ref matrix: Single cell data matrix (cells * genes) after count per million normalization and log2 fold change.
+#' @param ref matrix: Single cell data matrix (cells * genes) after normalization and log2 fold change.
 #' @param ref.type vector: cell type label of reference.
 #' @param B list: contains cell type mapping matrices (same length as tree depth).
 #' @param type_order vector: specify cell type order in the bottom layer of tree.
@@ -219,7 +219,7 @@ Check.KKT <- function(grad, pi, tol=1e-6) {
 #' @title HiDecon_marker
 #' @description Select marker genes for each layer of the hierarchical tree.
 #'
-#' @param ref matrix: Single cell data matrix (cells * genes) after count per million normalization.
+#' @param ref matrix: Single cell data matrix (cells * genes) after normalization.
 #' @param cell_type vector: cell type label of single cell reference.
 #' @param B list: contains cell type mapping matrices (same length as tree depth).
 #' @param type_order vector: specify cell type order in the bottom layer of tree.
@@ -255,8 +255,8 @@ HiDecon_marker <- function(ref, cell_type, B, type_order,  test="wilcox", nmrk =
 #' @title HiDecon_input.
 #' @description Calculate inputs for HiDecon and
 #'
-#' @param bulk matrix, bulk data of genes by samples. It should be count per million normalized.
-#' @param ref matrix: Single cell data matrix (genes by cells) after count per million normalization.
+#' @param bulk matrix, bulk data of genes by samples. It should be normalized.
+#' @param ref matrix: Single cell data matrix (genes by cells) after normalization.
 #' @param cell_type vector: cell type label of single cell reference.
 #' @param B list: contains cell type mapping matrices (same length as tree depth).
 #' @param type_order vector: specify cell type order in the bottom layer of tree.
@@ -292,8 +292,8 @@ HiDecon_input <- function(bulk, ref,  cell_type, B, type_order, test = "wilcox",
 #' @title HiDecon.
 #' @description Estimate cellular fractions for bulk tissue data using single cell reference with hierarchical tree.
 #'
-#' @param bulk matrix, bulk data of genes by samples. It should be count per million normalized.
-#' @param ref matrix: Single cell data matrix (genes by cells) after count per million normalization.
+#' @param bulk matrix, bulk data of genes by samples. It should be normalized.
+#' @param ref matrix: Single cell data matrix (genes by cells) after normalization.
 #' @param B list: contains cell type mapping matrices (same length as tree depth).
 #' @param cell_type vector: cell type label of single cell reference.
 #' @param type_order vector: specify cell type order in the bottom layer of tree.
@@ -329,8 +329,8 @@ HiDecon <- function(bulk, ref, B, cell_type, type_order,
 #' @title GeneratePseudoBulk.
 #' @description Generate bulk data surrogate for tuning parameter selection by resampling from single cell reference based on NNLS fraction estimates.
 #'
-#' @param bulk matrix, bulk data of genes by samples. It should be count per million normalized.
-#' @param ref matrix: Single cell data matrix (genes by cells) after count per million normalization.
+#' @param bulk matrix, bulk data of genes by samples. It should be normalized.
+#' @param ref matrix: Single cell data matrix (genes by cells) after normalization.
 #' @param cell_type vector: cell type label of single cell reference.
 #' @param type_order vector: specify cell type order in the bottom layer of tree.
 #' @param test the "test.type" in scran::findMarkers. The test used to find markers. test  = c("t", "wilcox", "binom"). Default is "wilcox".
@@ -370,13 +370,14 @@ GeneratePseudoBulk <- function(bulk, ref, cell_type, type_order, test = "wilcox"
 #' @title select_HiDecon
 #' @description Estimate cellular fractions for bulk tissue data using single cell reference with hierarchical tree. Use parameter selected by the resampling parameter selection method.
 #'
-#' @param bulk bulk matrix, bulk data of genes by samples. It should be count per million normalized.
-#' @param ref matrix: Single cell data matrix (genes by cells) after count per million normalization.
+#' @param bulk bulk matrix, bulk data of genes by samples. By default (argument "normalized=F"), provide raw counts data. If use "normalized=T", provide normalized data (count per million is preferred). Bulk and single cell data should use the same normalization method.
+#' @param ref matrix: Single cell data matrix (genes by cells). By default (argument "normalized=F"), provide raw counts data. If use "normalized=T", provide normalized data (count per million is preferred). Bulk and single cell data should use the same normalization method.
 #' @param B list: contains cell type mapping matrices (same length as tree depth).
 #' @param cell_type vector: cell type label of single cell reference.
 #' @param type_order vector: specify cell type order in the bottom layer of tree.
 #' @param lambda.set vector: parameter set used for parameter selection. Default is from 10 to 1000: c(10, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000).
 #' @param Pi.start vector, non-negative starting point for the estimation of sample i. Default is NULL, then function will assign the starting point.
+#' @param normalized logical: if bulk and ref provided are raw data, normalized=F; if data have been normalized, normalized=T. Default is F.
 #' @param max.iter the maximum number of iterations, default is 1e4.
 #' @param tol tolerance for the KKT conditions, default is 1e-6.
 #' @param test the "test.type" in scran::findMarkers. The test used to find markers. test  = c("t", "wilcox", "binom"). Default is "wilcox".
@@ -390,11 +391,15 @@ GeneratePseudoBulk <- function(bulk, ref, cell_type, type_order, test = "wilcox"
 #' @export
 #'
 select_HiDecon <- function(bulk, ref, B, cell_type, type_order,
-                       lambda.set = c(10, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000), Pi.start=NULL, max.iter=1e4, tol=1e-6,
+                       lambda.set = c(10, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000), Pi.start=NULL, normalized=F, max.iter=1e4, tol=1e-6,
                        test = "wilcox", nmrk = 50, seed = 123){
   ind = intersect(rownames(ref),rownames(bulk))
   bulk <- bulk[ind,]
   ref <- ref[ind,]
+  if(normalized==F){
+    bulk <- apply(bulk, 2, function(x){(x/sum(x))*1000000})
+    ref <- apply(ref, 2, function(x){(x/sum(x))*1000000})
+  }
   bulk.sim <- GeneratePseudoBulk(bulk = bulk, ref = ref, cell_type = cell_type,
                                  type_order = type_order, test = test,
                                  nmrk = nmrk, seed = seed)

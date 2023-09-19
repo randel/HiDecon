@@ -12,6 +12,7 @@ select_HiDecon(
   type_order,
   lambda.set = c(10, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000),
   Pi.start = NULL,
+  normalized = F,
   max.iter = 10000,
   tol = 1e-06,
   test = "wilcox",
@@ -20,9 +21,9 @@ select_HiDecon(
 )
 }
 \arguments{
-\item{bulk}{bulk matrix, bulk data of genes by samples. It should be count per million normalized.}
+\item{bulk}{bulk matrix, bulk data of genes by samples. By default (argument "normalized=F"), provide raw counts data. If use "normalized=T", provide normalized data (count per million is preferred). Bulk and single cell data should use the same normalization method.}
 
-\item{ref}{matrix: Single cell data matrix (genes by cells) after count per million normalization.}
+\item{ref}{matrix: Single cell data matrix (genes by cells). By default (argument "normalized=F"), provide raw counts data. If use "normalized=T", provide normalized data (count per million is preferred). Bulk and single cell data should use the same normalization method.}
 
 \item{B}{list: contains cell type mapping matrices (same length as tree depth).}
 
@@ -33,6 +34,8 @@ select_HiDecon(
 \item{lambda.set}{vector: parameter set used for parameter selection. Default is from 10 to 1000: c(10, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000).}
 
 \item{Pi.start}{vector, non-negative starting point for the estimation of sample i. Default is NULL, then function will assign the starting point.}
+
+\item{normalized}{logical: if bulk and ref provided are raw data, normalized=F; if data have been normalized, normalized=T. Default is F.}
 
 \item{max.iter}{the maximum number of iterations, default is 1e4.}
 

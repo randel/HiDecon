@@ -11,6 +11,6 @@ An object of class \code{matrix} (inherits from \code{array}) with 1572 rows and
 bulk.dat
 }
 \description{
-Simulated bulk tissue data of 126 samples. It's part of the simulated data used in HiDecon.
+Simulated bulk tissue data of 126 samples. It's part of the simulated data used in HiDecon. CPM normalized.
 }
 \keyword{datasets}

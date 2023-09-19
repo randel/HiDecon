@@ -10,7 +10,7 @@
 
 #' bulk.dat
 #'
-#' @description Simulated bulk tissue data of 126 samples. It's part of the simulated data used in HiDecon.
+#' @description Simulated bulk tissue data of 126 samples. It's part of the simulated data used in HiDecon. CPM normalized.
 #'
 #'
 #' @name bulk.dat
@@ -20,7 +20,7 @@
 
 #' ref.dat
 #'
-#' @description The single cell reference used in the HiDecon example data. It's part of the simulated data used in HiDecon.
+#' @description The single cell reference used in the HiDecon example data. It's part of the simulated data used in HiDecon. CPM normalized.
 #'
 #'
 #' @name ref.dat

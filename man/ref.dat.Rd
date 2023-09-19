@@ -11,6 +11,6 @@ An object of class \code{matrix} (inherits from \code{array}) with 1572 rows and
 ref.dat
 }
 \description{
-The single cell reference used in the HiDecon example data. It's part of the simulated data used in HiDecon.
+The single cell reference used in the HiDecon example data. It's part of the simulated data used in HiDecon. CPM normalized.
 }
 \keyword{datasets}

@@ -7,7 +7,7 @@
 reference(ref, ref.type, B, type_order, layer)
 }
 \arguments{
-\item{ref}{matrix: Single cell data matrix (cells * genes) after count per million normalization and log2 fold change.}
+\item{ref}{matrix: Single cell data matrix (cells * genes) after normalization and log2 fold change.}
 
 \item{ref.type}{vector: cell type label of reference.}
 

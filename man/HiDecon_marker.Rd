@@ -7,7 +7,7 @@
 HiDecon_marker(ref, cell_type, B, type_order, test = "wilcox", nmrk = 50)
 }
 \arguments{
-\item{ref}{matrix: Single cell data matrix (cells * genes) after count per million normalization.}
+\item{ref}{matrix: Single cell data matrix (cells * genes) after normalization.}
 
 \item{cell_type}{vector: cell type label of single cell reference.}
 
