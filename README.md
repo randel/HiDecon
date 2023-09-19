@@ -62,11 +62,11 @@ lineage relationship and used to guide HiDecon.</figcaption>
 data("B", "bulk.dat", "order.type", "ref.dat", "ref.type", package = "HiDecon")
 ```
 
-### HiDecon using $\lambda$ selected by \\ the tuning parameter selection algorithm
+### HiDecon using $\lambda$ selected by the tuning parameter selection algorithm
 
 By default (argument ‘normalized= F’), HiDecon takes raw counts data
 (both bulk and single cell) as input. Data normalization and
-transformation ($\text{log}_2 (\text{CPM}+1)$) will be performed
+transformation (log_2 (CPM+1)) will be performed
 automatically in the function.
 
 We will show the usage of function with CPM normalized data (argument
@@ -75,42 +75,10 @@ We will show the usage of function with CPM normalized data (argument
 ``` r
 ## With normalized data as input
 select.res <- select_HiDecon(bulk = bulk.dat, ref = ref.dat, B =B, cell_type = ref.type, type_order = order.type, normalized = T)
-#> 
-#>  current lambda: 10
-#>  current lambda: 100
-#>  current lambda: 200
-#>  current lambda: 300
-#>  current lambda: 400
-#>  current lambda: 500
-#>  current lambda: 600
-#>  current lambda: 700
-#>  current lambda: 800
-#>  current lambda: 900
-#>  current lambda: 1000
-#>  current lambda: 10
-#>  current lambda: 20
-#>  current lambda: 30
-#>  current lambda: 40
-#>  current lambda: 50
-#>  current lambda: 60
-#>  current lambda: 70
-#>  current lambda: 80
-#>  current lambda: 90
-#>  current lambda: 100
-#>  current lambda: 110
-#>  current lambda: 120
-#>  current lambda: 130
-#>  current lambda: 140
-#>  current lambda: 150
-#>  current lambda: 160
-#>  current lambda: 170
-#>  current lambda: 180
-#>  current lambda: 190
-#>  current lambda: 200
 ```
 
 Check $\lambda$ chosen by tuning parameter selection method and the mCCC
-on different $\lambda$s.
+on different &lambda;s.
 
 ``` r
 select.res$lambda
@@ -137,7 +105,7 @@ round(head(select.res$res),3)
 
 ### HiDecon using prespecified $\lambda$
 
-We suggest users use select_HiDecon. However, users can run HiDecon with
+While we suggest users use select_HiDecon, users can run HiDecon with
 prespecified $\lambda$.
 
 ``` r
