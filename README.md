@@ -59,11 +59,11 @@ tree used to guide the deconvolution of example data is shown as below:
 data("B", "bulk.dat", "order.type", "ref.dat", "ref.type", package = "HiDecon")
 ```
 
-### HiDecon using $\lambda$ selected by \\ the tuning parameter selection algorithm
+### HiDecon using $\lambda$ selected by the tuning parameter selection algorithm
 
 By default (argument ‘normalized= F’), HiDecon takes raw counts data
 (both bulk and single cell) as input. Data normalization and
-transformation ($\text{log}_2 (\text{CPM}+1)$) will be performed
+transformation (log2 (CPM+1)) will be performed
 automatically in the function.
 
 We will show the usage of function with CPM normalized data (argument
@@ -75,7 +75,7 @@ select.res <- select_HiDecon(bulk = bulk.dat, ref = ref.dat, B =B, cell_type = r
 ```
 
 Check $\lambda$ chosen by tuning parameter selection method and the mCCC
-on different $\lambda$s.
+on different &lambda;s.
 
 ``` r
 select.res$lambda
