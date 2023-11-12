@@ -6,6 +6,11 @@ similarities among cell types and cell differentiation relationships, to
 estimate cellular fractions in bulk data. HiDecon has outstanding
 performance on estimating related cell types as well as rare cell types.
 
+## Reference
+Penghui Huang, Manqi Cai, Xinghua Lu, Chris McKennan, and Jiebiao Wang.
+Accurate estimation of rare cell type fractions from tissue omics data via hierarchical deconvolution.
+[Annals of Applied Statistics](https://www.e-publications.org/ims/submission/AOAS/user/submissionFile/59581?confirm=57fbf5a8).
+
 ## Installation
 
 ``` r
@@ -32,7 +37,7 @@ in the package.
 ### Hierarchical tree and the cell type mapping matrix
 
 Hierarchical tree is specified from well-studied cell lineages or can be
-learnt from hierarchical clustering of scRNA-seq data. The hierarchical
+learned from hierarchical clustering of scRNA-seq data. The hierarchical
 tree used to guide the deconvolution of example data is shown as below:
 
 <figure>
